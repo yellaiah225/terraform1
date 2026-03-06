@@ -3,7 +3,8 @@ location = "East US"
 vm_name = "example-vm"
 environment = "dev"
 admin_username = "admin"
-image_offer = "UbuntuServer"
-image_publisher = "Canonical"
-image_sku = "18.04-LTS"
+image_offer     = "UbuntuServer"
+os_disk_caching = "ReadWrite"
+
+
 
