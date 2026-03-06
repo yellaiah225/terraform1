@@ -1,5 +1,5 @@
-resource_group_name = "example-resource-group"
+resource_group_name = "test-group"
 location = "East US"
 vm_name = "example-vm"
-environment = "production"
+environment = "dev"
 admin_username = "admin"
