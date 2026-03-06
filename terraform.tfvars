@@ -1,0 +1,5 @@
+resource_group_name = "example-resource-group"
+location = "East US"
+vm_name = "example-vm"
+environment = "production"
+admin_username = "admin"
