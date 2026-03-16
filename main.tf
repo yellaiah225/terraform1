@@ -3,10 +3,12 @@ provider "azurerm" {
   resource_provider_registrations = "none"
 }
 
+# Reference existing resource group
 data "azurerm_resource_group" "existing_rg" {
   name = var.resource_group_name
 }
 
+# Create Virtual Network
 resource "azurerm_virtual_network" "my_vnet" {
   name                = var.vnet_name
   location            = data.azurerm_resource_group.existing_rg.location
@@ -18,6 +20,7 @@ resource "azurerm_virtual_network" "my_vnet" {
   }
 }
 
+# Create Subnets
 resource "azurerm_subnet" "my_subnet1" {
   name                 = "subnet-1"
   resource_group_name  = data.azurerm_resource_group.existing_rg.name
@@ -32,19 +35,21 @@ resource "azurerm_subnet" "my_subnet2" {
   address_prefixes     = ["10.0.2.0/24"]
 }
 
+# Public IP
 resource "azurerm_public_ip" "vm_public_ip" {
   name                = "${var.vm_name}-pip"
   location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
 
-  allocation_method   = "Static"
-  sku                 = "Standard"
+  allocation_method = "Static"
+  sku               = "Standard"
 
   tags = {
     environment = var.environment
   }
 }
 
+# Network Interface
 resource "azurerm_network_interface" "vm_nic" {
   name                = "${var.vm_name}-nic"
   location            = data.azurerm_resource_group.existing_rg.location
@@ -62,6 +67,7 @@ resource "azurerm_network_interface" "vm_nic" {
   }
 }
 
+# Linux Virtual Machine
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = var.vm_name
   resource_group_name = data.azurerm_resource_group.existing_rg.name
