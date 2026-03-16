@@ -26,5 +26,4 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
-scription = "Path to SSH public key"
-}
+
