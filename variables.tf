@@ -1,54 +1,44 @@
 variable "resource_group_name" {
-  description = "The name of the resource group"
-  type = string
+  description = "Name of the existing resource group"
+  type        = string
 }
 
-variable "location" {
-  description = "The Azure location where the resources will be created"
-  type = string
+variable "vnet_name" {
+  description = "Name of the Virtual Network"
+  type        = string
 }
 
-variable "vm_name" {
-  description = "The name of the virtual machine"
-  type = string
+variable "vnet_address_space" {
+  description = "Address space for the VNet"
+  type        = list(string)
 }
 
-variable "vm_size" {
-  description = "The size of the virtual machine"
-  type = string
+variable "subnets" {
+  description = "List of subnets to create"
+  type = list(object({
+    name           = string
+    address_prefix = string
+  }))
 }
 
 variable "environment" {
-  description = "The environment for the VM (e.g., dev, test, prod)"
-  type = string
+  description = "Environment tag"
+  type        = string
+  default     = "dev"
+}
+variable "vm_name" {
+  description = "Name of the Linux VM"
+}
+
+variable "vm_size" {
+  description = "VM size"
+  default     = "Standard_B1s"
 }
 
 variable "admin_username" {
-  description = "The admin username for the VM"
-  type = string
+  description = "Admin username for VM"
 }
 
-variable "ssh_public_key" {
-  description = "The public SSH key for authentication"
-  type = string
-}
-
-variable "image_publisher" {
-  description = "The publisher of the image to use"
-  type = string
-}
-
-variable "image_offer" {
-  description = "The offer of the image to use"
-  type = string
-}
-
-variable "image_sku" {
-  description = "The SKU of the image to use"
-  type = string
-}
-
-variable "os_disk_caching" {
-  description = "The caching for the OS disk (e.g., None, ReadOnly, ReadWrite)"
-  type = string
+variable "ssh_public_key_path" {
+  description = "Path to SSH public key"
 }
