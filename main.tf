@@ -1,91 +1,103 @@
-# Terraform Configuration for Azure Linux VM
-
 provider "azurerm" {
   features {}
+  resource_provider_registrations = "none"
+ 
+
 }
 
-# Create a Resource Group
-resource "azurerm_resource_group" "main" {
-  name     = "example-resources"
-  location = "East US"
+# Reference existing resource group
+data "azurerm_resource_group" "existing_rg" {
+  name = var.resource_group_name
 }
 
-# Create a Virtual Network
-resource "azurerm_virtual_network" "main" {
-  name                = "example-vnet"
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+# Create Virtual Network
+resource "azurerm_virtual_network" "my_vnet" {
+  name                = var.vnet_name
+  location            = data.azurerm_resource_group.existing_rg.location
+  resource_group_name = data.azurerm_resource_group.existing_rg.name
+  address_space       = var.vnet_address_space
+
+  tags = {
+    environment = var.environment
+  }
 }
 
-# Create a Subnet
-resource "azurerm_subnet" "main" {
-  name                 = "example-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
+# Create Subnet
+resource "azurerm_subnet" "my_subnet1" {
+  name                 = "subnet-1"
+  resource_group_name  = data.azurerm_resource_group.existing_rg.name
+  virtual_network_name = azurerm_virtual_network.my_vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Create a Network Interface
-resource "azurerm_network_interface" "main" {
-  name                = "example-nic"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+resource "azurerm_subnet" "my_subnet2" {
+  name                 = "subnet-2"
+  resource_group_name  = data.azurerm_resource_group.existing_rg.name
+  virtual_network_name = azurerm_virtual_network.my_vnet.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+resource "azurerm_public_ip" "vm_public_ip" {
+  name                = "${var.vm_name}-pip"
+  location            = data.azurerm_resource_group.existing_rg.location
+  resource_group_name = data.azurerm_resource_group.existing_rg.name
+
+  allocation_method   = "Dynamic"     # REQUIRED for Standard SKU
+  sku                 = "Basic"   # Explicitly set Standard
+
+  tags = {
+    environment = var.environment
+  }
+}
+
+
+# -------------------------
+# Network Interface
+# -------------------------
+resource "azurerm_network_interface" "vm_nic" {
+  name                = "${var.vm_name}-nic"
+  location            = data.azurerm_resource_group.existing_rg.location
+  resource_group_name = data.azurerm_resource_group.existing_rg.name
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.main.id
+    subnet_id                     = azurerm_subnet.my_subnet1.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.main.id
+    public_ip_address_id          = azurerm_public_ip.vm_public_ip.id
   }
 }
 
-# Create a Public IP
-resource "azurerm_public_ip" "main" {
-  name                = "example-public-ip"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Dynamic"
-}
+# -------------------------
+# Linux Virtual Machine
+# -------------------------
+resource "azurerm_linux_virtual_machine" "vm" {
+  name                = var.vm_name
+  resource_group_name = data.azurerm_resource_group.existing_rg.name
+  location            = data.azurerm_resource_group.existing_rg.location
+  size                = var.vm_size
+  admin_username      = var.admin_username
 
-# Create a Network Security Group
-resource "azurerm_network_security_group" "main" {
-  name                = "example-nsg"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-}
+  network_interface_ids = [
+    azurerm_network_interface.vm_nic.id
+  ]
 
-# Create a Network Security Rule
-resource "azurerm_network_security_rule" "main" {
-  name                        = "example-nsg-rule"
-  priority                    = 1000
-  access                      = "Allow"
-  direction                   = "Inbound"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_range      = "22"
-  source_address_prefix      = "*"
-  destination_address_prefix   = "*"
-  network_security_group_name  = azurerm_network_security_group.main.name
-}
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = file(var.ssh_public_key_path)
+  }
 
-# Create a Linux Virtual Machine
-resource "azurerm_linux_virtual_machine" "main" {
-  name                = "exampleVM"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  size                = "Standard_DS1_v2"
-  admin_username      = "adminuser"
-  admin_password      = "P@ssword123"  # Use an output for secret in production
-  network_interface_ids = [azurerm_network_interface.main.id]
   os_disk {
     caching              = "ReadWrite"
-    create_option       = "FromImage"
+    storage_account_type = "Standard_LRS"
   }
+
   source_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
     version   = "latest"
+  }
+
+  tags = {
+    environment = var.environment
   }
 }
