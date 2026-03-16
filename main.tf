@@ -38,7 +38,6 @@ resource "azurerm_subnet" "my_subnet2" {
 }
 resource "azurerm_public_ip" "vm_public_ip" {
   name                = "${var.vm_name}-pip"
-  location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
 
   allocation_method   = "Dynamic"     # REQUIRED for Standard SKU
