@@ -79,10 +79,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     azurerm_network_interface.vm_nic.id
   ]
 
-  admin_ssh_key {
-    username   = var.admin_username
-    public_key = file(var.ssh_public_key_path)
-  }
+
 
   os_disk {
     caching              = "ReadWrite"
