@@ -36,8 +36,3 @@ resource "azurerm_subnet" "my_subnet2" {
 }
 
 
-
-  tags = {
-    environment = var.environment
-  }
-}
