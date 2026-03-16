@@ -67,25 +67,23 @@ resource "azurerm_network_interface" "vm_nic" {
   }
 }
 
-# Linux Virtual Machine
+
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = var.vm_name
   resource_group_name = data.azurerm_resource_group.existing_rg.name
   location            = data.azurerm_resource_group.existing_rg.location
   size                = var.vm_size
   admin_username      = var.admin_username
- admin_ssh_key {
-    username   = var.admin_username
-    public_key = var.ssh_public_key
-  }
+  disable_password_authentication = true
+
   network_interface_ids = [
     azurerm_network_interface.vm_nic.id
   ]
-   admin_ssh_key {
+
+  admin_ssh_key {
     username   = var.admin_username
     public_key = var.ssh_public_key
-  } 
-
+  }
 
   os_disk {
     caching              = "ReadWrite"
