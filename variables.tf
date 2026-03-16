@@ -20,28 +20,11 @@ variable "subnets" {
     address_prefix = string
   }))
 }
-variable "ssh_public_key" {
-  description = "SSH public key string"
-  type        = string
-}
+
 variable "environment" {
   description = "Environment tag"
   type        = string
   default     = "dev"
 }
-variable "vm_name" {
-  description = "Name of the Linux VM"
-}
-
-variable "vm_size" {
-  description = "VM size"
-  default     = "Standard_B1s"
-}
-
-variable "admin_username" {
-  description = "Admin username for VM"
-}
-
-variable "ssh_public_key_path" {
-  description = "Path to SSH public key"
+scription = "Path to SSH public key"
 }
