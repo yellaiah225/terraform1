@@ -36,22 +36,7 @@ resource "azurerm_subnet" "my_subnet2" {
   virtual_network_name = azurerm_virtual_network.my_vnet.name
   address_prefixes     = ["10.0.2.0/24"]
 }
-resource "azurerm_public_ip" "vm_public_ip" {
-  name                = "${var.vm_name}-pip"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-
-  allocation_method   = "Dynamic"     # REQUIRED for Standard SKU
-  sku                 = "Basic"   # Explicitly set Standard
-
-  tags = {
-    environment = var.environment
-  }
-}
-
-
-# -------------------------
 # Network Interface
-# -------------------------
 resource "azurerm_network_interface" "vm_nic" {
   name                = "${var.vm_name}-nic"
   location            = data.azurerm_resource_group.existing_rg.location
@@ -59,15 +44,17 @@ resource "azurerm_network_interface" "vm_nic" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.my_subnet1.id
+    subnet_id                     = azurerm_subnet.vm_subnet.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.vm_public_ip.id
   }
+
+  tags = {
+    environment = var.environment
+  }
 }
 
-# -------------------------
 # Linux Virtual Machine
-# -------------------------
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = var.vm_name
   resource_group_name = data.azurerm_resource_group.existing_rg.name
@@ -95,6 +82,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
     sku       = "22_04-lts"
     version   = "latest"
   }
+
+  tags = {
+    environment = var.environment
+  }
+}
 
   tags = {
     environment = var.environment
