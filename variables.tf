@@ -20,10 +20,10 @@ variable "subnets" {
     address_prefix = string
   }))
 }
-admin_ssh_key {
-    username   = var.admin_username
-    public_key = var.ssh_public_key
-  }
+variable "ssh_public_key" {
+  description = "SSH public key string"
+  type        = string
+}
 variable "environment" {
   description = "Environment tag"
   type        = string
